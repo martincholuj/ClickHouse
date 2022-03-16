@@ -61,6 +61,13 @@ def run_docker_image_with_env(
     subprocess.check_call(cmd, shell=True)
 
 
+def is_release_build(build_type, package_type, sanitizer, split_binary):
+    return (build_type == "" and
+            package_type == "deb" and
+            sanitizer == "" and
+            not split_binary)
+
+
 def parse_env_variables(
     build_type,
     compiler,
@@ -153,7 +160,8 @@ def parse_env_variables(
         cmake_flags.append("-DCMAKE_INSTALL_SYSCONFDIR=/etc")
         cmake_flags.append("-DCMAKE_INSTALL_LOCALSTATEDIR=/var")
         cmake_flags.append("-DBUILD_STANDALONE_KEEPER=ON")
-        cmake_flags.append("-DINSTALL_STRIPPED_BINARIES=ON")
+        if is_release_build(build_type, package_type, sanitizer, split_binary):
+            cmake_flags.append("-DINSTALL_STRIPPED_BINARIES=ON")
 
     result.append(f"CC={cc}")
     result.append(f"CXX={cxx}")
